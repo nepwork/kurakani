@@ -1,34 +1,44 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { CreateAuthDto } from './dto/create-auth.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
+import { LoginInput } from './dto/login.input';
+import { RefreshTokenInput } from './dto/refresh-token.input';
+import { SignupInput } from './dto/signup.input';
+import { Token } from './models/token.model';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly auth: AuthService) { }
 
-  @Post()
-  create(@Body() createAuthDto: CreateAuthDto) {
-    return this.authService.create(createAuthDto);
+  @Post('sign-up')
+  async signUp(@Body() data: SignupInput): Promise<Token> {
+    data.email = data.email.toLowerCase();
+    const { accessToken, refreshToken } = await this.auth.createUser(data);
+    return {
+      accessToken,
+      refreshToken,
+    };
   }
 
-  @Get()
-  findAll() {
-    return this.authService.findAll();
+  @Post('sign-in')
+  async login(@Body() { email, password }: LoginInput): Promise<Token> {
+    const { accessToken, refreshToken } = await this.auth.login(
+      email.toLowerCase(),
+      password
+    );
+
+    return {
+      accessToken,
+      refreshToken,
+    };
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.authService.findOne(+id);
+  @Post('refresh-token')
+  async refreshToken(@Body() { token }: RefreshTokenInput): Promise<Token> {
+    return this.auth.refreshToken(token);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateAuthDto: UpdateAuthDto) {
-    return this.authService.update(+id, updateAuthDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.authService.remove(+id);
+  @Get('user/:token')
+  async user(@Param('token') token: string) {
+    return await this.auth.getUserFromToken(token);
   }
 }

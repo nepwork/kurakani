@@ -1,0 +1,96 @@
+//// ------------------------------------------------------
+//// THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+//// ------------------------------------------------------
+
+Table User {
+  id Int [pk, increment]
+  name String
+  email String [unique, not null]
+  meetups UsersOnMeetups [not null]
+  profile Profile
+  inviter User [not null]
+  invited User [not null]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  password String [not null]
+  g1 GameMatrix [not null]
+  g2 GameMatrix [not null]
+  role Role [not null, default: 'USER']
+}
+
+Table Profile {
+  id Int [pk, increment]
+  bio String
+  user User [not null]
+  userId Int [unique, not null]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+}
+
+Table Meetup {
+  id Int [pk, increment]
+  title String [not null]
+  image String
+  address String [not null]
+  description String
+  users UsersOnMeetups [not null]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+}
+
+Table UsersOnMeetups {
+  userId Int [not null]
+  user User [not null]
+  meetupId Int [not null]
+  meetup Meetup [not null]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+
+  indexes {
+    (userId, meetupId) [pk]
+  }
+}
+
+Table GameMatrix {
+  id Int [pk, increment]
+  player1 User [not null]
+  p1Id Int [not null]
+  player2 User [not null]
+  p2Id Int [not null]
+  cells GameCells [not null]
+}
+
+Table GameCells {
+  i Int [not null]
+  j Int [not null]
+  value String [not null]
+  GameMatrix GameMatrix
+  gameMatrixId Int
+
+  indexes {
+    (i, j) [pk]
+  }
+}
+
+Table friendship {
+  inviterId Int [ref: > User.id]
+  invitedId Int [ref: > User.id]
+}
+
+Enum Role {
+  ADMIN
+  USER
+  ANON
+}
+
+Ref: Profile.userId - User.id
+
+Ref: UsersOnMeetups.userId > User.id
+
+Ref: UsersOnMeetups.meetupId > Meetup.id
+
+Ref: GameMatrix.p1Id > User.id
+
+Ref: GameMatrix.p2Id > User.id
+
+Ref: GameCells.gameMatrixId > GameMatrix.id

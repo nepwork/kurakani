@@ -5,6 +5,19 @@ generator client {
   provider = "prisma-client-js"
 }
 
+generator dbml {
+  provider = "prisma-dbml-generator"
+}
+
+generator erd {
+  provider = "prisma-erd-generator"
+}
+
+generator docs {
+  provider = "node node_modules/prisma-docs-generator"
+  output = "../docs"
+}
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -15,7 +28,7 @@ model User {
   name      String?
   email     String           @unique
   meetups   UsersOnMeetups[]
-  Profile   Profile?
+  profile   Profile?
   inviter   User[]           @relation("friendship")
   invited   User[]           @relation("friendship")
   createdAt DateTime         @default(now())
@@ -23,6 +36,13 @@ model User {
   password  String
   g1        GameMatrix[]     @relation("p1")
   g2        GameMatrix[]     @relation("p2")
+  role      Role             @default(USER)
+}
+
+enum Role {
+  ADMIN
+  USER
+  ANON
 }
 
 model Profile {
